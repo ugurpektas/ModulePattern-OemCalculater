@@ -37,6 +37,17 @@ const ProductController = (function(){
             const newProduct = new Product(id,name,parseFloat(price));
             data.products.push(newProduct);
             return newProduct;
+        },
+        getTotal : function (){
+            let total = 0;
+
+            data.products.forEach(function(item){   // girilen fiyat değerlerini toplayarak yazdırma
+                total += item.price;
+            });
+
+            data.totalPrice = total;                
+
+            return data.totalPrice;                 //toplam fiyat değerini geri döndürme
         }
     }
 
@@ -49,7 +60,9 @@ const UIController = (function(){
         addButton : '.addBtn',
         productName : '#productName',
         productPrice : '#productPrice',
-        productCard : '#productCard'
+        productCard : '#productCard',
+        totalTl : '#total-tl',
+        totalDolar : '#total-dolar'
     }
     
     return {
@@ -100,6 +113,10 @@ const UIController = (function(){
         },
         hideCard : function (){
             document.querySelector(Selectors.productCard).style.display = 'none';
+        },
+        showTotal : function (total){
+            document.querySelector(Selectors.totalDolar).textContent = total;                    //toplam dolar fiyatının gösterilmesi
+            document.querySelector(Selectors.totalTl).textContent = ((total*8.37).toFixed(2)) ;  //dolar kurunun üzerinden tl karşılığının gösterilmesi
         }
     }
 
@@ -119,11 +136,19 @@ const App = (function(ProductCtrl,UICtrl){
         const productPrice = document.querySelector(UISelectors.productPrice).value;
 
         if (productName !== '' && productPrice !== ''){
-                //add product
+            //add product
             const newProduct = ProductCtrl.addProduct(productName,productPrice);
-                //add product to list
+
+            //add product to list
             UIController.addProduct(newProduct);    //ekleme işlemi
-                //clear inputs
+
+            //get total
+            const total = ProductCtrl.getTotal();
+            
+            //show total
+            UIController.showTotal(total);
+
+            //clear inputs
             UIController.clearInputs();             //ekleme işlemi yapıldıktan sonra inputun sıfırlanması.
         }
 
@@ -139,10 +164,9 @@ const App = (function(ProductCtrl,UICtrl){
             if (products.length==0){
                 UIController.hideCard();
             }else {
-                UICtrl.createProductList(products); // UIController modülündeki fonksiyon
-                //load event listenner
-                
+                UICtrl.createProductList(products); // UIController modülündeki fonksiyon                
             }
+            //load event listenner
             loadEventListenners();
         }
     }
