@@ -1,18 +1,16 @@
-// Storage Controller   -- kullanıcıdan alınan bilgileri tarayıcıya aktarma
+    // Storage Controller   -- kullanıcıdan alınan bilgileri tarayıcıya aktarma
 const StorageController = (function(){
 
 })();
 
-// Product Controller -- Ürün bilgilerini temsil eden kısım
+    // Product Controller -- Ürün bilgilerini temsil eden kısım
 const ProductController = (function(){
-
     //private alan
     const Product = function(id,name,price){    //prive alan -- constructor
         this.id = id;
         this.name = name;
         this.price = price;
     }
-
     const data = {  
         products : [],                  //inputtan girilen değerlerin bulunduğu liste
         selectedProduct : null,         //seçilen ürünlerin aktarıldığı değişken
@@ -26,6 +24,23 @@ const ProductController = (function(){
         },
         getData : function(){
             return data;
+        },
+        getProductById : function (id){
+            let product = null;
+
+            data.products.forEach(function(prd){
+                if(prd.id == id){
+                    product = prd;
+                }
+            });
+
+            return product;
+        },
+        setCurrentProduct : function (product){
+            data.selectedProduct = product;
+        },
+        getCurrentProduct : function (){
+            return data.selectedProduct;
         },
         addProduct : function (name,price){
             let id;
@@ -58,6 +73,7 @@ const UIController = (function(){
     const Selectors = {
         productList : "#item-list",
         addButton : '.addBtn',
+        updateBtn : '.updateBtn',
         productName : '#productName',
         productPrice : '#productPrice',
         productCard : '#productCard',
@@ -76,9 +92,7 @@ const UIController = (function(){
                     <td>${prd.name}</td>
                     <td>${prd.price} $</td>
                     <td class="text-right">
-                        <button type="submit" class="btn btn-warning btn-sm updateBtn ">
-                            <i class="far fa-edit "></i>
-                        </button>
+                        <i class="far fa-edit edit-product"></i>
                     </td>
                 </tr>
                 `;
@@ -98,9 +112,7 @@ const UIController = (function(){
                     <td>${prd.name}</td>
                     <td>${prd.price} $</td>
                     <td class="text-right">
-                        <button type="submit" class="btn btn-warning btn-sm updateBtn ">
-                            <i class="far fa-edit "></i>
-                        </button>
+                        <i class="far fa-edit edit-product"></i>
                     </td>
                 </tr>  
             `;
@@ -117,6 +129,11 @@ const UIController = (function(){
         showTotal : function (total){
             document.querySelector(Selectors.totalDolar).textContent = total;                    //toplam dolar fiyatının gösterilmesi
             document.querySelector(Selectors.totalTl).textContent = ((total*8.37).toFixed(2)) ;  //dolar kurunun üzerinden tl karşılığının gösterilmesi
+        },
+        addProductToForm : function (){
+            const selectedProduct = ProductController.getCurrentProduct();
+            document.querySelector(Selectors.productName).value = selectedProduct.name;
+            document.querySelector(Selectors.productPrice).value = selectedProduct.price;
         }
     }
 
@@ -130,6 +147,8 @@ const App = (function(ProductCtrl,UICtrl){
     const loadEventListenners = function (){
             // add product event
         document.querySelector(UISelectors.addButton).addEventListener('click', productAddSubmit);
+            // edit product
+        document.querySelector(UISelectors.productList).addEventListener('click', productEditSubmit);
     }
     const productAddSubmit = function(e){
         const productName = document.querySelector(UISelectors.productName).value;
@@ -153,6 +172,21 @@ const App = (function(ProductCtrl,UICtrl){
         }
 
         console.log(productName,productPrice);
+        e.preventDefault();
+    }
+    const productEditSubmit = function(e){
+        let element = e.target;
+        if (element.classList.contains('edit-product')){
+        const id = element.parentNode.previousElementSibling.previousElementSibling.previousElementSibling.textContent;
+        
+        //get selected product
+        const product = ProductCtrl.getProductById(id);
+        
+        //set current product   // edit için seçilen ürünlerin bilgisini set etmek
+        ProductCtrl.setCurrentProduct(product);
+        //add product to ui     // set edilen ürünleri ekrana gösterme
+        UICtrl.addProductToForm();
+        }
         e.preventDefault();
     }
 
