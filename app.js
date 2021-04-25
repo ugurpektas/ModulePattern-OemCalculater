@@ -73,7 +73,9 @@ const UIController = (function(){
     const Selectors = {
         productList : "#item-list",
         addButton : '.addBtn',
-        updateBtn : '.updateBtn',
+        updateButton : '.updateBtn',
+        deleteButton : '.deleteBtn',
+        cancelButton : '.cancelBtn',
         productName : '#productName',
         productPrice : '#productPrice',
         productCard : '#productCard',
@@ -134,6 +136,26 @@ const UIController = (function(){
             const selectedProduct = ProductController.getCurrentProduct();
             document.querySelector(Selectors.productName).value = selectedProduct.name;
             document.querySelector(Selectors.productPrice).value = selectedProduct.price;
+        },
+        addingState : function (){
+            UIController.clearInputs();
+            document.querySelector(Selectors.addButton).style.display = 'inline';
+            document.querySelector(Selectors.updateButton).style.display = 'none';
+            document.querySelector(Selectors.deleteButton).style.display = 'none';
+            document.querySelector(Selectors.cancelButton).style.display = 'none';
+        },
+        editState : function (tr){
+
+            const parent = tr.parentNode;
+            for (let i=0; i<parent.children.length;i++){
+                parent.children[i].classList.remove('bg-warning');
+            }
+            tr.classList.add('bg-warning');
+
+            document.querySelector(Selectors.addButton).style.display = 'none';
+            document.querySelector(Selectors.updateButton).style.display = 'inline';
+            document.querySelector(Selectors.deleteButton).style.display = 'inline';
+            document.querySelector(Selectors.cancelButton).style.display = 'inline';
         }
     }
 
@@ -177,15 +199,18 @@ const App = (function(ProductCtrl,UICtrl){
     const productEditSubmit = function(e){
         let element = e.target;
         if (element.classList.contains('edit-product')){
-        const id = element.parentNode.previousElementSibling.previousElementSibling.previousElementSibling.textContent;
-        
-        //get selected product
-        const product = ProductCtrl.getProductById(id);
-        
-        //set current product   // edit için seçilen ürünlerin bilgisini set etmek
-        ProductCtrl.setCurrentProduct(product);
-        //add product to ui     // set edilen ürünleri ekrana gösterme
-        UICtrl.addProductToForm();
+            const id = element.parentNode.previousElementSibling.previousElementSibling.previousElementSibling.textContent;
+            
+            //get selected product
+            const product = ProductCtrl.getProductById(id);
+            
+            //set current product   // edit için seçilen ürünlerin bilgisini set etmek
+            ProductCtrl.setCurrentProduct(product);
+
+            //add product to ui     // set edilen ürünleri ekrana gösterme
+            UICtrl.addProductToForm();
+            
+            UICtrl.editState(element.parentNode.parentNode);
         }
         e.preventDefault();
     }
@@ -193,12 +218,14 @@ const App = (function(ProductCtrl,UICtrl){
     return {
         init : function(){
             console.log('Starting app...');
+
+            UICtrl.addingState();
             const products = ProductCtrl.getProducts();
 
             if (products.length==0){
-                UIController.hideCard();
+                UICtrl.hideCard();
             }else {
-                UICtrl.createProductList(products); // UIController modülündeki fonksiyon                
+                UICtrl.createProductList(products);         // UIController modülündeki fonksiyon                
             }
             //load event listenner
             loadEventListenners();
